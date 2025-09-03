@@ -10,6 +10,7 @@ import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.PoseEstimate;
 
 public class PositionSubsystem extends SubsystemBase {
   private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
@@ -43,7 +44,11 @@ public class PositionSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // This method will be called once per scheduler 
+    double robotYaw = m_gyro.getYaw();  
+    LimelightHelpers.SetRobotOrientation("", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    PoseEstimate limelightEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
   }
 
   @Override
