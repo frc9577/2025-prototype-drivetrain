@@ -10,11 +10,14 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.*;
 import frc.robot.commands.ArcadeDriveCommand;
 
@@ -30,8 +33,13 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_leftSpeed  = 0.0;
   private double m_rightSpeed = 0.0;
 
+  private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
+  private final DifferentialDrivePoseEstimator m_poseEstimator;
+
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() { 
+  public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator) { 
+    m_poseEstimator = poseEstimator;
+
     // Right Motor
     TalonFXConfiguration rightMotorConfig = new TalonFXConfiguration();
     rightMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -120,7 +128,7 @@ public class DriveSubsystem extends SubsystemBase {
     SendableRegistry.setName(m_Drivetrain, "DriveSubsystem", "Drivetrain");   
   }
 
-  public void initDefaultCommand(XboxController Controller)
+  public void initDefaultCommand(CommandXboxController Controller)
   {
     setDefaultCommand(new ArcadeDriveCommand(this, Controller));
   }

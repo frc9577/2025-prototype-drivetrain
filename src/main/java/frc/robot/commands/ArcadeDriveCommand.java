@@ -4,20 +4,20 @@
 
 package frc.robot.commands;
 import frc.robot.subsystems.DriveSubsystem;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /** An example command that uses an example subsystem. */
 public class ArcadeDriveCommand extends Command {
   private final DriveSubsystem m_subsystem;
-  private XboxController m_driveController;
+  private CommandXboxController m_driveController;
 
   /**
    * Creates a new ArcadeDriveCommand.
    *
    * @param subsystem The subsystem used by this command.
    */
-  public ArcadeDriveCommand(DriveSubsystem subsystem, XboxController driveController)  {
+  public ArcadeDriveCommand(DriveSubsystem subsystem, CommandXboxController driveController)  {
     m_subsystem = subsystem;
     m_driveController = driveController;
 

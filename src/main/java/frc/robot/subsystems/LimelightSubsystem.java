@@ -3,33 +3,17 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-
-import com.studica.frc.AHRS;
-import com.studica.frc.AHRS.NavXComType;
-
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.PoseEstimate;
 
-public class PositionSubsystem extends SubsystemBase {
-  private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
+public class LimelightSubsystem extends SubsystemBase {
+  private final DifferentialDrivePoseEstimator m_poseEstimator;
 
   /** Creates a new PositionSubsystem. */
-  public PositionSubsystem() {}
-
-  /**
-   * Example command factory method.
-   *
-   * @return a command
-   */
-  public Command exampleMethodCommand() {
-    // Inline construction of command goes here.
-    // Subsystem::RunOnce implicitly requires `this` subsystem.
-    return runOnce(
-        () -> {
-          /* one-time action goes here */
-        });
+  public LimelightSubsystem(DifferentialDrivePoseEstimator poseEstimator) {
+    m_poseEstimator = poseEstimator;
   }
 
   /**
@@ -45,10 +29,16 @@ public class PositionSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler 
-    double robotYaw = m_gyro.getYaw();  
-    LimelightHelpers.SetRobotOrientation("", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
 
-    PoseEstimate limelightEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+    // This is copy and pasted from limelight's documentation for testing.
+    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+    if (limelightMeasurement.tagCount >= 2) {  // Only trust measurement if we see multiple tags
+        m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+        m_poseEstimator.addVisionMeasurement(
+            limelightMeasurement.pose,
+            limelightMeasurement.timestampSeconds
+        );
+    }
   }
 
   @Override
