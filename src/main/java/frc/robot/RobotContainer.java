@@ -6,18 +6,21 @@ package frc.robot;
 
 import java.util.Optional;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
+
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.estimator.PoseEstimator;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.ExampleCommand;
+import frc.robot.factorys.DriveSubsystemFactory;
+import frc.robot.factorys.TalonFXFactory;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.ExampleSubsystem;
-import frc.robot.subsystems.LimelightSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -28,24 +31,38 @@ import frc.robot.subsystems.LimelightSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Optional<DriveSubsystem> m_driveSubsystem;
-  private final Optional<LimelightSubsystem> m_limelightSubsystem;
-  private final Optional<ExampleSubsystem> m_exampleSubsystem;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
+  private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
+  private final DifferentialDriveKinematics m_DriveKinematics = new DifferentialDriveKinematics(DrivetrainConstants.trackWidthMeters);
+
   // Pose Estimators
-  // TODO: Figure out how to create the pose estimators
-  private DifferentialDrivePoseEstimator m_DrivePoseEstimator;
-  private DifferentialDrivePoseEstimator m_limeLightPoseEstimator;
+  private DifferentialDrivePoseEstimator m_DrivePoseEstimator = new DifferentialDrivePoseEstimator(
+                                                                  m_DriveKinematics, 
+                                                                  m_gyro.getRotation2d(), 
+                                                                  0, 
+                                                                  0, 
+                                                                  new Pose2d());
+
+  // Factorys
+  private TalonFXFactory m_TalonFXFactory = new TalonFXFactory();
+  private DriveSubsystemFactory m_DriveSubsystemFactory = new DriveSubsystemFactory();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    // Init DriveSubsystem
+    Optional<TalonFX> rightLead = m_TalonFXFactory.construct(DrivetrainConstants.kRightMotorCANID);
+    Optional<TalonFX> leftLead = m_TalonFXFactory.construct(DrivetrainConstants.kLeftMotorCANID);
+    Optional<TalonFX> rightFollower = m_TalonFXFactory.construct(DrivetrainConstants.kOptionalRightMotorCANID);
+    Optional<TalonFX> leftFollower = m_TalonFXFactory.construct(DrivetrainConstants.kOptionalLeftMotorCANID);
+    m_driveSubsystem = m_DriveSubsystemFactory.construct(m_DrivePoseEstimator, m_gyro, rightLead, leftLead, rightFollower, leftFollower);
+
     // Init the subsystems
-    m_driveSubsystem = getSubsystem(DriveSubsystem.class, m_DrivePoseEstimator);
-    m_limelightSubsystem = getSubsystem(LimelightSubsystem.class, m_limeLightPoseEstimator);
-    m_exampleSubsystem = getSubsystem(ExampleSubsystem.class);
+    //m_limelightSubsystem = getSubsystem(LimelightSubsystem.class, m_limeLightPoseEstimator);
+    //m_exampleSubsystem = getSubsystem(ExampleSubsystem.class);
 
     // Configure the default commands
     configureDefaultCommands();
@@ -58,21 +75,22 @@ public class RobotContainer {
   // the constructor above a lot clearer. This is what clever coding looks like.
   // Owen: I added the ability to pass object args through this for dependency injection,
   // I hope this does not break anything or commited a coding sin or somthing
-  private static <SSC> Optional<SSC> getSubsystem(Class<SSC> subsystemClass, Object... args) {
-    Optional<SSC> iss;
-    try {
-      iss = Optional.ofNullable(subsystemClass.getDeclaredConstructor().newInstance(args));
-    } catch (Exception e) {
-      iss = Optional.empty();
-      // This is not tested! - Owen
-      DriverStation.reportWarning(
-        String.format(
-        "The %s was not found!", subsystemClass.getName()), 
-        false
-      );
-    }
-    return iss;
-  }
+  // private static <SSC> Optional<SSC> getSubsystem(Class<SSC> subsystemClass, Object... args) {
+  //   Optional<SSC> iss;
+  //   try {
+
+  //     iss = Optional.ofNullable(subsystemClass.getDeclaredConstructor().newInstance(args));
+  //   } catch (Exception e) {
+  //     iss = Optional.empty();
+  //     // This is not tested! - Owen
+  //     DriverStation.reportWarning(
+  //       String.format(
+  //       "The %s was not found!", subsystemClass.getName()), 
+  //       false
+  //     );
+  //   }
+  //   return iss;
+  // }
 
   private void configureDefaultCommands() {
     if (m_driveSubsystem.isPresent())
@@ -93,20 +111,20 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    SmartDashboard.putBoolean("Example Subsystem", m_exampleSubsystem.isPresent());
+    // SmartDashboard.putBoolean("Example Subsystem", m_exampleSubsystem.isPresent());
 
-    if (m_exampleSubsystem.isPresent())
-    {
-      ExampleSubsystem exampleSubsystem = m_exampleSubsystem.get();
+    // if (m_exampleSubsystem.isPresent())
+    // {
+    //   ExampleSubsystem exampleSubsystem = m_exampleSubsystem.get();
 
-      // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-      new Trigger(exampleSubsystem::exampleCondition)
-          .onTrue(new ExampleCommand(exampleSubsystem));
+    //   // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
+    //   new Trigger(exampleSubsystem::exampleCondition)
+    //       .onTrue(new ExampleCommand(exampleSubsystem));
 
-      // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-      // cancelling on release.
-      m_driverController.b().whileTrue(exampleSubsystem.exampleMethodCommand());
-    }
+    //   // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
+    //   // cancelling on release.
+    //   m_driverController.b().whileTrue(exampleSubsystem.exampleMethodCommand());
+    // }
   }
 
   /**

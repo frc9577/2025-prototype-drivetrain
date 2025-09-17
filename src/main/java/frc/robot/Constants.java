@@ -47,5 +47,8 @@ public final class Constants {
 
     // SmartDashboard update frequency for drive subsystem state in 20ms counts.
     public static final int kTicksPerUpdate = 5;
+
+    // The track width in meters.
+    public static final double trackWidthMeters = 1; // TODO: Set Value!
   }
 }

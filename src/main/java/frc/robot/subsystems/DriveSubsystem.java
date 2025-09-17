@@ -22,10 +22,10 @@ import frc.robot.Constants.*;
 import frc.robot.commands.ArcadeDriveCommand;
 
 public class DriveSubsystem extends SubsystemBase {
-  private final TalonFX m_rightMotor = new TalonFX(DrivetrainConstants.kRightMotorCANID);
+  private TalonFX m_rightMotor;
   private TalonFX m_optionalRightMotor;
 
-  private final TalonFX m_leftMotor  = new TalonFX(DrivetrainConstants.kLeftMotorCANID);
+  private TalonFX m_leftMotor;
   private TalonFX m_optionalLeftMotor; 
 
   private DifferentialDrive m_Drivetrain;
@@ -33,12 +33,15 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_leftSpeed  = 0.0;
   private double m_rightSpeed = 0.0;
 
-  private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
   private final DifferentialDrivePoseEstimator m_poseEstimator;
+  private final AHRS m_gyro;
 
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator) { 
+  public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator, AHRS gyro, TalonFX rightMotor, TalonFX leftMotor) { 
     m_poseEstimator = poseEstimator;
+    m_gyro = gyro;
+    m_rightMotor = rightMotor;
+    m_leftMotor = leftMotor;
 
     // Right Motor
     TalonFXConfiguration rightMotorConfig = new TalonFXConfiguration();
@@ -51,30 +54,6 @@ public class DriveSubsystem extends SubsystemBase {
     m_rightMotor.getConfigurator().apply(rightMotorConfig);    
     SendableRegistry.setName(m_rightMotor, "DriveSubsystem", "rightMotor");
 
-    // Optional Right Motor
-    try {
-      m_optionalRightMotor = new TalonFX(DrivetrainConstants.kOptionalRightMotorCANID);
-  
-      // Setting up Config
-      TalonFXConfiguration optionalRightMotorConfig = new TalonFXConfiguration();
-      optionalRightMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-      optionalRightMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
-      optionalRightMotorConfig.Voltage.withPeakForwardVoltage(Volts.of(DrivetrainConstants.PeakVoltage))
-      .withPeakReverseVoltage(Volts.of(-DrivetrainConstants.PeakVoltage));
-
-      // Saving
-      m_optionalRightMotor.getConfigurator().apply(optionalRightMotorConfig);
-
-      // Setting as a follwer
-      m_optionalRightMotor.setControl(
-        new Follower(m_rightMotor.getDeviceID(), false)
-      );
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-
     // Left Motor
     TalonFXConfiguration leftMotorConfig = new TalonFXConfiguration();
     leftMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -86,39 +65,6 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftMotor.getConfigurator().apply(leftMotorConfig);
     SendableRegistry.setName(m_leftMotor, "DriveSubsystem", "leftMotor");
 
-    // Optional Left Motor
-    try {
-      m_optionalLeftMotor = new TalonFX(DrivetrainConstants.kOptionalLeftMotorCANID);
-
-      // Setting up Config
-      TalonFXConfiguration optionalLeftMotorConfig = new TalonFXConfiguration();
-      optionalLeftMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-      optionalLeftMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-
-      optionalLeftMotorConfig.Voltage.withPeakForwardVoltage(Volts.of(DrivetrainConstants.PeakVoltage))
-      .withPeakReverseVoltage(Volts.of(-DrivetrainConstants.PeakVoltage));
-
-      // Saving
-      m_optionalLeftMotor.getConfigurator().apply(optionalLeftMotorConfig);
-
-      // Setting as follower
-      m_optionalLeftMotor.setControl(
-        new Follower(m_leftMotor.getDeviceID(), false)
-      );
-    }
-    catch (Exception e)
-    {
-      // TODO: There are really two cases you want to catch. The first, when the follower
-      // motor controller doesn't exist, isn't an error. The second, where the motor exists
-      // but one of the later configuration calls fails, is an error. Generally, you would
-      // only dump a stack trace in error cases and you definitely don't want to do this in
-      // normal operation. I would suggest splitting this block into two try/except chunks,
-      // on that catches the missing controller and just outputs a status message to the log
-      // indicating that only one motor is in use, and the other catching the real errors
-      // and dumping the stack trace.
-      e.printStackTrace();
-    }
-
     // Zeroing the encoders
     m_leftMotor.setPosition(0);
     m_rightMotor.setPosition(0);
@@ -126,6 +72,44 @@ public class DriveSubsystem extends SubsystemBase {
     // Setting up the drive train
     m_Drivetrain = new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
     SendableRegistry.setName(m_Drivetrain, "DriveSubsystem", "Drivetrain");   
+  }
+
+  public void setFollowers(TalonFX optionalRight, TalonFX optionalLeft) {
+    m_optionalRightMotor = optionalRight;
+  
+    // Setting up Config
+    TalonFXConfiguration optionalRightMotorConfig = new TalonFXConfiguration();
+    optionalRightMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    optionalRightMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    optionalRightMotorConfig.Voltage.withPeakForwardVoltage(Volts.of(DrivetrainConstants.PeakVoltage))
+    .withPeakReverseVoltage(Volts.of(-DrivetrainConstants.PeakVoltage));
+
+    // Saving
+    m_optionalRightMotor.getConfigurator().apply(optionalRightMotorConfig);
+
+    // Setting as a follwer
+    m_optionalRightMotor.setControl(
+      new Follower(m_rightMotor.getDeviceID(), false)
+    );
+
+    m_optionalLeftMotor = optionalLeft;
+
+    // Setting up Config
+    TalonFXConfiguration optionalLeftMotorConfig = new TalonFXConfiguration();
+    optionalLeftMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    optionalLeftMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+
+    optionalLeftMotorConfig.Voltage.withPeakForwardVoltage(Volts.of(DrivetrainConstants.PeakVoltage))
+    .withPeakReverseVoltage(Volts.of(-DrivetrainConstants.PeakVoltage));
+
+    // Saving
+    m_optionalLeftMotor.getConfigurator().apply(optionalLeftMotorConfig);
+
+    // Setting as follower
+    m_optionalLeftMotor.setControl(
+      new Follower(m_leftMotor.getDeviceID(), false)
+    );
   }
 
   public void initDefaultCommand(CommandXboxController Controller)
