@@ -20,7 +20,9 @@ import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.factorys.DriveSubsystemFactory;
 import frc.robot.factorys.TalonFXFactory;
+import frc.robot.factorys.VisionSubsystemFactory;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -31,6 +33,7 @@ import frc.robot.subsystems.DriveSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Optional<DriveSubsystem> m_driveSubsystem;
+  private final Optional<VisionSubsystem> m_visionSubsystem;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -46,10 +49,17 @@ public class RobotContainer {
                                                                   0, 
                                                                   0, 
                                                                   new Pose2d());
+  private DifferentialDrivePoseEstimator m_VisionPoseEstimator = new DifferentialDrivePoseEstimator(
+                                                                  m_DriveKinematics, 
+                                                                  m_gyro.getRotation2d(), 
+                                                                  0, 
+                                                                  0, 
+                                                                  new Pose2d());
 
   // Factorys
   private TalonFXFactory m_TalonFXFactory = new TalonFXFactory();
   private DriveSubsystemFactory m_DriveSubsystemFactory = new DriveSubsystemFactory();
+  private VisionSubsystemFactory m_VisionSubsystemFactory = new VisionSubsystemFactory();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -59,6 +69,9 @@ public class RobotContainer {
     Optional<TalonFX> rightFollower = m_TalonFXFactory.construct(DrivetrainConstants.kOptionalRightMotorCANID);
     Optional<TalonFX> leftFollower = m_TalonFXFactory.construct(DrivetrainConstants.kOptionalLeftMotorCANID);
     m_driveSubsystem = m_DriveSubsystemFactory.construct(m_DrivePoseEstimator, m_gyro, rightLead, leftLead, rightFollower, leftFollower);
+
+    // Init VisionSubsystem
+    m_visionSubsystem = m_VisionSubsystemFactory.construct(m_VisionPoseEstimator, m_gyro);
 
     // Init the subsystems
     //m_limelightSubsystem = getSubsystem(LimelightSubsystem.class, m_limeLightPoseEstimator);
