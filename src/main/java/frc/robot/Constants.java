@@ -44,6 +44,7 @@ public final class Constants {
 
     // The distance travelled for a single rotation of the Kraken output shaft.
     public static final double kDrivetrainGearRatio = (8.46/0.478536);
+    public static final double kWheelRadiusMeters = (4.0 / 2.0) * 0.0254; // Four Inch Wheels
 
     // SmartDashboard update frequency for drive subsystem state in 20ms counts.
     public static final int kTicksPerUpdate = 5;

@@ -144,6 +144,9 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
+    m_poseEstimator.update(
+        m_gyro.getRotation2d(), m_leftMotor.getPosition(), m_rightMotor.getPosition());
   }
 
   @Override
