@@ -14,6 +14,7 @@ import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -141,12 +142,23 @@ public class DriveSubsystem extends SubsystemBase {
     }
   }
 
+  
+  // Wrapping robot position inside of getposition
+  public Pose2d getPose2d(){
+    return m_poseEstimator.getEstimatedPosition();
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    double leftRotations = m_leftMotor.getPosition().getValueAsDouble();
+    double leftDistanceMeters = leftRotations * 2 * Math.PI * DrivetrainConstants.kWheelRadiusMeters / DrivetrainConstants.kDrivetrainGearRatio;
+
+    double rightRotations = m_rightMotor.getPosition().getValueAsDouble();
+    double rightDistanceMeters = rightRotations * 2 * Math.PI * DrivetrainConstants.kWheelRadiusMeters / DrivetrainConstants.kDrivetrainGearRatio;
 
     m_poseEstimator.update(
-        m_gyro.getRotation2d(), m_leftMotor.getPosition(), m_rightMotor.getPosition());
+        m_gyro.getRotation2d(), leftDistanceMeters, rightDistanceMeters);
   }
 
   @Override
