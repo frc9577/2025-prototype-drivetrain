@@ -15,6 +15,7 @@ import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -142,23 +143,52 @@ public class DriveSubsystem extends SubsystemBase {
     }
   }
 
-  
   // Wrapping robot position inside of getposition
   public Pose2d getPose2d(){
     return m_poseEstimator.getEstimatedPosition();
   }
 
+  // Resets the drivetrains pose estimator to zero.
+  public void resetPose(){
+    m_leftMotor.setPosition(0);
+    m_rightMotor.setPosition(0);
+    m_poseEstimator.resetPose(Pose2d.kZero);
+  }
+
+  // Returns a robot relative ChassisSpeeds object based on the avrg linear velocity
+  // in meters per second and avrg anglear velocity in readians per second
+  public ChassisSpeeds getRobotRelativeSpeeds(){
+    // Linear Velocity in meters per second
+    double leftMPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kWheelCircumfrance;
+    double rightMPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kWheelCircumfrance;
+
+    // Anglear Velocity in radians per second
+    double leftRPS = leftMPS/DrivetrainConstants.kWheelDistanceFromCenterOfRotation;
+    double rightRPS = rightMPS/DrivetrainConstants.kWheelDistanceFromCenterOfRotation;
+
+    // Avrging them togther
+    double linearVelocity = (leftMPS+rightMPS)/2;
+    double AnglearVelocity = (leftRPS+rightRPS)/2;
+
+    // Making Chassis Speeds
+    return new ChassisSpeeds(linearVelocity, 0, AnglearVelocity);
+  }
+
+  // Gives the drivetrain a new drive command based on a robot relative
+  // chassis speed object.
+  public void driveRobotRelative(ChassisSpeeds relativeChassisSpeed){
+    m_Drivetrain.arcadeDrive(relativeChassisSpeed.vxMetersPerSecond, 
+                            relativeChassisSpeed.omegaRadiansPerSecond);
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    double leftRotations = m_leftMotor.getPosition().getValueAsDouble();
-    double leftDistanceMeters = leftRotations * 2 * Math.PI * DrivetrainConstants.kWheelRadiusMeters / DrivetrainConstants.kDrivetrainGearRatio;
-
-    double rightRotations = m_rightMotor.getPosition().getValueAsDouble();
-    double rightDistanceMeters = rightRotations * 2 * Math.PI * DrivetrainConstants.kWheelRadiusMeters / DrivetrainConstants.kDrivetrainGearRatio;
 
     m_poseEstimator.update(
-        m_gyro.getRotation2d(), leftDistanceMeters, rightDistanceMeters);
+        m_gyro.getRotation2d(), 
+        m_leftMotor.getPosition().getValueAsDouble(), 
+        m_rightMotor.getPosition().getValueAsDouble());
   }
 
   @Override
