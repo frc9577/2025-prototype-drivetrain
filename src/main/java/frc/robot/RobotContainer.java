@@ -4,9 +4,11 @@
 
 package frc.robot;
 
+import java.io.File;
 import java.util.Optional;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -58,11 +60,17 @@ public class RobotContainer {
     Optional<TalonFX> leftLead = m_TalonFXFactory.construct(DrivetrainConstants.kLeftMotorCANID);
     Optional<TalonFX> rightFollower = m_TalonFXFactory.construct(DrivetrainConstants.kOptionalRightMotorCANID);
     Optional<TalonFX> leftFollower = m_TalonFXFactory.construct(DrivetrainConstants.kOptionalLeftMotorCANID);
-    m_driveSubsystem = m_DriveSubsystemFactory.construct(m_DrivePoseEstimator, m_gyro, rightLead, leftLead, rightFollower, leftFollower);
+    m_driveSubsystem = m_DriveSubsystemFactory.construct(m_DrivePoseEstimator, m_DriveKinematics, m_gyro, rightLead, leftLead, rightFollower, leftFollower);
 
     // Init the subsystems
     //m_limelightSubsystem = getSubsystem(LimelightSubsystem.class, m_limeLightPoseEstimator);
     //m_exampleSubsystem = getSubsystem(ExampleSubsystem.class);
+
+    // Init Autos (/home/lvuser/deploy/pathplanner/autos)
+    File directory = new File("/home/lvuser/deploy/pathplanner/autos");
+
+    // Init Chooser
+    // autoChooser = AutoBuilder.buildAutoChooser();
 
     // Configure the default commands
     configureDefaultCommands();

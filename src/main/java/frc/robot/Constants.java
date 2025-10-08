@@ -47,8 +47,6 @@ public final class Constants {
     public static final double kWheelRadiusMeters = (4.0 / 2.0) * 0.0254; // Four Inch Wheels
     public static final double kWheelCircumfrance = 2 * Math.PI * DrivetrainConstants.kWheelRadiusMeters;
 
-    public static final double kWheelDistanceFromCenterOfRotation = 0.5; // meters, need to mesure.
-
     // SmartDashboard update frequency for drive subsystem state in 20ms counts.
     public static final int kTicksPerUpdate = 5;
 

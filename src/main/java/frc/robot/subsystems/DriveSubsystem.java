@@ -16,6 +16,8 @@ import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -35,12 +37,14 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_leftSpeed  = 0.0;
   private double m_rightSpeed = 0.0;
 
+  private final DifferentialDriveKinematics m_kinematics;
   private final DifferentialDrivePoseEstimator m_poseEstimator;
   private final AHRS m_gyro;
 
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator, AHRS gyro, TalonFX rightMotor, TalonFX leftMotor) { 
+  public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator, DifferentialDriveKinematics kinematics, AHRS gyro, TalonFX rightMotor, TalonFX leftMotor) { 
     m_poseEstimator = poseEstimator;
+    m_kinematics = kinematics;
     m_gyro = gyro;
     m_rightMotor = rightMotor;
     m_leftMotor = leftMotor;
@@ -157,21 +161,15 @@ public class DriveSubsystem extends SubsystemBase {
 
   // Returns a robot relative ChassisSpeeds object based on the avrg linear velocity
   // in meters per second and avrg anglear velocity in readians per second
+  // Currently we are asuming that their is no scale for the motors, we cannot find anywhere to set the scale.
   public ChassisSpeeds getRobotRelativeSpeeds(){
     // Linear Velocity in meters per second
-    double leftMPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kWheelCircumfrance;
-    double rightMPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kWheelCircumfrance;
+    double leftMPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+    double rightMPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
 
-    // Anglear Velocity in radians per second
-    double leftRPS = leftMPS/DrivetrainConstants.kWheelDistanceFromCenterOfRotation;
-    double rightRPS = rightMPS/DrivetrainConstants.kWheelDistanceFromCenterOfRotation;
-
-    // Avrging them togther
-    double linearVelocity = (leftMPS+rightMPS)/2;
-    double AnglearVelocity = (leftRPS+rightRPS)/2;
-
-    // Making Chassis Speeds
-    return new ChassisSpeeds(linearVelocity, 0, AnglearVelocity);
+    // Make wheelSpeeds object from MPS & converts it to chasis speeds
+    DifferentialDriveWheelSpeeds wheelSpeeds = new DifferentialDriveWheelSpeeds(leftMPS, rightMPS);
+    return m_kinematics.toChassisSpeeds(wheelSpeeds);
   }
 
   // Gives the drivetrain a new drive command based on a robot relative
