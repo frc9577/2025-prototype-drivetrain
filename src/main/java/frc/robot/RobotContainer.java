@@ -67,7 +67,7 @@ public class RobotContainer {
     //m_exampleSubsystem = getSubsystem(ExampleSubsystem.class);
 
     // Init Autos (/home/lvuser/deploy/pathplanner/autos)
-    File directory = new File("/home/lvuser/deploy/pathplanner/autos");
+    //File directory = new File("/home/lvuser/deploy/pathplanner/autos");
 
     // Init Chooser
     // autoChooser = AutoBuilder.buildAutoChooser();
