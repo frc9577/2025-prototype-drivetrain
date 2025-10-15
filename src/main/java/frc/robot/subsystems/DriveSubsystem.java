@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -18,6 +19,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -41,6 +43,77 @@ public class DriveSubsystem extends SubsystemBase {
   private final DifferentialDrivePoseEstimator m_poseEstimator;
   private final AHRS m_gyro;
 
+public class pidControl {
+    private TalonFX m_motor;
+    private boolean m_positiveMovesForward;
+
+    private double m_targetPosition;
+
+    private final TrapezoidProfile m_profile = new TrapezoidProfile(
+      new TrapezoidProfile.Constraints(
+        DrivetrainConstants.maxVelocity, 
+        DrivetrainConstants.maxAcceleration
+      )
+    );
+
+    private PositionVoltage m_positionVoltage;
+    private TrapezoidProfile.State m_goal = new TrapezoidProfile.State();
+    private TrapezoidProfile.State m_setPoint = new TrapezoidProfile.State();
+
+    public pidControl(TalonFX motor, boolean positiveMovesForward) {
+      m_motor = motor;
+      m_positiveMovesForward = positiveMovesForward;
+    }
+
+    public void setTargetPosition(double position) {
+      m_targetPosition = position;
+
+      double positionRotations = position * DrivetrainConstants.kDrivetrainGearRatio;
+      if (!m_positiveMovesForward) {
+        positionRotations = -positionRotations;
+      }
+
+      m_goal = new TrapezoidProfile.State(positionRotations, 0);
+      m_setPoint = new TrapezoidProfile.State(0, 0);
+
+      m_positionVoltage = new PositionVoltage(0).withSlot(0);
+
+      m_motor.setPosition(0); // zero's motor at the start of the movement
+    }
+
+    public void calculatePosition() {
+      m_setPoint = m_profile.calculate(0.020, m_setPoint, m_goal);
+
+      m_positionVoltage.Position = m_setPoint.position;
+      m_positionVoltage.Velocity = m_setPoint.velocity;
+      m_motor.setControl(m_positionVoltage);
+    }
+
+    public double getTargetPosition() {
+      return m_targetPosition;
+    }
+
+    public double getPosition() {
+      double motorPosition = m_motor.getPosition().getValueAsDouble() / DrivetrainConstants.kDrivetrainGearRatio;
+
+      if (m_positiveMovesForward) {
+        return motorPosition;
+      } else {
+        return -motorPosition;
+      }
+    }
+  }
+
+  pidControl m_leftPidControl = new pidControl(
+    m_leftMotor, 
+    DrivetrainConstants.kLeftPositiveMovesForward
+  );
+
+  pidControl m_rightPidControl = new pidControl(
+    m_rightMotor, 
+    DrivetrainConstants.kRightPositiveMovesForward
+  );
+
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator, DifferentialDriveKinematics kinematics, AHRS gyro, TalonFX rightMotor, TalonFX leftMotor) { 
     m_poseEstimator = poseEstimator;
@@ -51,6 +124,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Right Motor
     TalonFXConfiguration rightMotorConfig = new TalonFXConfiguration();
+    rightMotorConfig.Slot0.kV = DrivetrainConstants.kV;
+    rightMotorConfig.Slot0.kS = DrivetrainConstants.kS;
+    rightMotorConfig.Slot0.kP = DrivetrainConstants.kP;
+    rightMotorConfig.Slot0.kI = DrivetrainConstants.kI; // No output for integrated error
+    rightMotorConfig.Slot0.kD = DrivetrainConstants.kD; // A velocity of 1 rps results in 0.1 V output
     rightMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     rightMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -62,6 +140,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Left Motor
     TalonFXConfiguration leftMotorConfig = new TalonFXConfiguration();
+    leftMotorConfig.Slot0.kV = DrivetrainConstants.kV;
+    leftMotorConfig.Slot0.kS = DrivetrainConstants.kS;
+    leftMotorConfig.Slot0.kP = DrivetrainConstants.kP;
+    leftMotorConfig.Slot0.kI = DrivetrainConstants.kI; // No output for integrated error
+    leftMotorConfig.Slot0.kD = DrivetrainConstants.kD; // A velocity of 1 rps results in 0.1 V output
     leftMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     leftMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
@@ -77,7 +160,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Setting up the drive train
     m_Drivetrain = new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
-    SendableRegistry.setName(m_Drivetrain, "DriveSubsystem", "Drivetrain");   
+    SendableRegistry.setName(m_Drivetrain, "DriveSubsystem", "Drivetrain");
+    
+      // Gyro setup
+      m_gyro.zeroYaw();
   }
 
   public void setFollowers(TalonFX optionalRight, TalonFX optionalLeft) {
