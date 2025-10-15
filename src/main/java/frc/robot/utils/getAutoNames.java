@@ -9,7 +9,7 @@ import java.util.ArrayList;
 // We are asuming that the files are always in the "/home/lvuser/deploy/pathplanner/autos"
 // We found this information at https://github.com/mjansen4857/pathplanner/wiki/PathPlannerLib:-Java-Usage
 public class getAutoNames {
-    public static String[] main() {
+    public static ArrayList<String> main() {
         // Creating an ArrayList so I can fill it with auto file names w/o the extention.
         ArrayList<String> autoNames = new ArrayList<String>();
 
@@ -34,11 +34,7 @@ public class getAutoNames {
             }
         }
 
-        // Converting the ArrayList into a normal array for memory optimization & saftey
-        String[] autoNamesArray = new String[autoNames.size()];
-        autoNames.toArray(autoNamesArray);
-
         // Returning the new array
-        return autoNamesArray;
+        return autoNames;
     }
 }

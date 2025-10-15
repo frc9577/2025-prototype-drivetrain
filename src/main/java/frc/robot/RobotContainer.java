@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -68,8 +69,7 @@ public class RobotContainer {
     //m_exampleSubsystem = getSubsystem(ExampleSubsystem.class);
 
     // Init Autos (/home/lvuser/deploy/pathplanner/autos)
-    String[] AutoNames = getAutoNames.main();
-    System.out.println(AutoNames);
+    ArrayList<String> AutoNames = getAutoNames.main();
 
     // Init Chooser
     // autoChooser = AutoBuilder.buildAutoChooser();
