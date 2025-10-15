@@ -23,6 +23,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.factorys.DriveSubsystemFactory;
 import frc.robot.factorys.TalonFXFactory;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.utils.getAutoNames;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -35,8 +36,8 @@ public class RobotContainer {
   private final Optional<DriveSubsystem> m_driveSubsystem;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  //private final CommandXboxController m_driverController =
+  //    new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
   private final AHRS m_gyro = new AHRS(NavXComType.kMXP_SPI);
   private final DifferentialDriveKinematics m_DriveKinematics = new DifferentialDriveKinematics(DrivetrainConstants.trackWidthMeters);
@@ -67,7 +68,8 @@ public class RobotContainer {
     //m_exampleSubsystem = getSubsystem(ExampleSubsystem.class);
 
     // Init Autos (/home/lvuser/deploy/pathplanner/autos)
-    //File directory = new File("/home/lvuser/deploy/pathplanner/autos");
+    String[] AutoNames = getAutoNames.main();
+    System.out.println(AutoNames);
 
     // Init Chooser
     // autoChooser = AutoBuilder.buildAutoChooser();
@@ -105,7 +107,7 @@ public class RobotContainer {
     {
       DriveSubsystem driveSubsystem = m_driveSubsystem.get();
 
-      driveSubsystem.initDefaultCommand(m_driverController);
+      //driveSubsystem.initDefaultCommand(m_driverController);
     }
   }
 
