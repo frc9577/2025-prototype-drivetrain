@@ -20,6 +20,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 public final class Constants {
   public static class AutoConstants {
     // Module Config Stuff
+    // TODO: Run SYS ID and fill in!
     public static final double kWheelRadiusMeters = 0.0;
     public static final double kMaxDriveVelocityMPS = 0.0;
     public static final double kWheelCOF = 0.0;
@@ -30,6 +31,7 @@ public final class Constants {
     public static final ModuleConfig kMoudleConfig = new ModuleConfig(kWheelRadiusMeters, kMaxDriveVelocityMPS, kWheelCOF, kDriveMotor, kDriveCurrentLimit, kNumMotors);
 
     // Robot Config Stuff
+    // TODO: Run SYS ID and fill in!
     public static final double kMassKG = 0.0;
     public static final double kMOI = 0.0; // Moment of Intertia
     public static final double kTrackWithMeters = 0.0;
