@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -16,15 +15,16 @@ import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.factorys.DriveSubsystemFactory;
 import frc.robot.factorys.TalonFXFactory;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.utils.getAutoNames;
+import frc.robot.utils.AutoCommands;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -51,6 +51,9 @@ public class RobotContainer {
                                                                   0, 
                                                                   new Pose2d());
 
+  // Sendable Choosers
+  private SendableChooser<Command> autoChooser;
+
   // Factorys
   private TalonFXFactory m_TalonFXFactory = new TalonFXFactory();
   private DriveSubsystemFactory m_DriveSubsystemFactory = new DriveSubsystemFactory();
@@ -68,11 +71,8 @@ public class RobotContainer {
     //m_limelightSubsystem = getSubsystem(LimelightSubsystem.class, m_limeLightPoseEstimator);
     //m_exampleSubsystem = getSubsystem(ExampleSubsystem.class);
 
-    // Init Autos (/home/lvuser/deploy/pathplanner/autos)
-    ArrayList<String> AutoNames = getAutoNames.main();
-
-    // Init Chooser
-    // autoChooser = AutoBuilder.buildAutoChooser();
+    // Init Auto
+    configureAutos();
 
     // Configure the default commands
     configureDefaultCommands();
@@ -102,11 +102,19 @@ public class RobotContainer {
   //   return iss;
   // }
 
+  private void configureAutos() {
+    // Init Autos (/home/lvuser/deploy/pathplanner/autos)
+    ArrayList<Command> autoCommands = AutoCommands.getAutoCommands(m_driveSubsystem);
+
+    // Init Chooser
+    autoChooser = AutoBuilder.buildAutoChooser(); // Can make a default by giving a string
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+  }
+
   private void configureDefaultCommands() {
     if (m_driveSubsystem.isPresent())
     {
-      DriveSubsystem driveSubsystem = m_driveSubsystem.get();
-
+      //DriveSubsystem driveSubsystem = m_driveSubsystem.get();
       //driveSubsystem.initDefaultCommand(m_driverController);
     }
   }
@@ -143,7 +151,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return null; //Autos.exampleAuto(exampleSubsystem);
+    return autoChooser.getSelected();
   }
 }
