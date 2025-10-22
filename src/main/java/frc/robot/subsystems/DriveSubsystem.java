@@ -3,29 +3,27 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.studica.frc.AHRS;
-import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.*;
+import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.commands.ArcadeDriveCommand;
+import frc.robot.utils.PIDControl;
 
 public class DriveSubsystem extends SubsystemBase {
   private TalonFX m_rightMotor;
@@ -43,73 +41,12 @@ public class DriveSubsystem extends SubsystemBase {
   private final DifferentialDrivePoseEstimator m_poseEstimator;
   private final AHRS m_gyro;
 
-public class pidControl {
-    private TalonFX m_motor;
-    private boolean m_positiveMovesForward;
-
-    private double m_targetPosition;
-
-    private final TrapezoidProfile m_profile = new TrapezoidProfile(
-      new TrapezoidProfile.Constraints(
-        DrivetrainConstants.maxVelocity, 
-        DrivetrainConstants.maxAcceleration
-      )
-    );
-
-    private PositionVoltage m_positionVoltage;
-    private TrapezoidProfile.State m_goal = new TrapezoidProfile.State();
-    private TrapezoidProfile.State m_setPoint = new TrapezoidProfile.State();
-
-    public pidControl(TalonFX motor, boolean positiveMovesForward) {
-      m_motor = motor;
-      m_positiveMovesForward = positiveMovesForward;
-    }
-
-    public void setTargetPosition(double position) {
-      m_targetPosition = position;
-
-      double positionRotations = position * DrivetrainConstants.kDrivetrainGearRatio;
-      if (!m_positiveMovesForward) {
-        positionRotations = -positionRotations;
-      }
-
-      m_goal = new TrapezoidProfile.State(positionRotations, 0);
-      m_setPoint = new TrapezoidProfile.State(0, 0);
-
-      m_positionVoltage = new PositionVoltage(0).withSlot(0);
-
-      m_motor.setPosition(0); // zero's motor at the start of the movement
-    }
-
-    public void calculatePosition() {
-      m_setPoint = m_profile.calculate(0.020, m_setPoint, m_goal);
-
-      m_positionVoltage.Position = m_setPoint.position;
-      m_positionVoltage.Velocity = m_setPoint.velocity;
-      m_motor.setControl(m_positionVoltage);
-    }
-
-    public double getTargetPosition() {
-      return m_targetPosition;
-    }
-
-    public double getPosition() {
-      double motorPosition = m_motor.getPosition().getValueAsDouble() / DrivetrainConstants.kDrivetrainGearRatio;
-
-      if (m_positiveMovesForward) {
-        return motorPosition;
-      } else {
-        return -motorPosition;
-      }
-    }
-  }
-
-  pidControl m_leftPidControl = new pidControl(
+  PIDControl m_leftPidControl = new PIDControl(
     m_leftMotor, 
     DrivetrainConstants.kLeftPositiveMovesForward
   );
 
-  pidControl m_rightPidControl = new pidControl(
+  PIDControl m_rightPidControl = new PIDControl(
     m_rightMotor, 
     DrivetrainConstants.kRightPositiveMovesForward
   );
@@ -267,7 +204,7 @@ public class pidControl {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // This method will be called once per scheduler run 
 
     m_poseEstimator.update(
         m_gyro.getRotation2d(), 

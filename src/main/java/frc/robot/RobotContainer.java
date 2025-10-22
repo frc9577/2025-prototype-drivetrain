@@ -4,11 +4,9 @@
 
 package frc.robot;
 
-import java.io.File;
 import java.util.Optional;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
