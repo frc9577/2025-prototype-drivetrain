@@ -19,11 +19,12 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.commands.ArcadeDriveCommand;
-import frc.robot.utils.PIDControl;
+//import frc.robot.utils.PIDControl;
 
 public class DriveSubsystem extends SubsystemBase {
   private TalonFX m_rightMotor;
@@ -41,15 +42,15 @@ public class DriveSubsystem extends SubsystemBase {
   private final DifferentialDrivePoseEstimator m_poseEstimator;
   private final AHRS m_gyro;
 
-  PIDControl m_leftPidControl = new PIDControl(
-    m_leftMotor, 
-    DrivetrainConstants.kLeftPositiveMovesForward
-  );
+  // PIDControl m_leftPidControl = new PIDControl(
+  //   m_leftMotor, 
+  //   DrivetrainConstants.kLeftPositiveMovesForward
+  // );
 
-  PIDControl m_rightPidControl = new PIDControl(
-    m_rightMotor, 
-    DrivetrainConstants.kRightPositiveMovesForward
-  );
+  // PIDControl m_rightPidControl = new PIDControl(
+  //   m_rightMotor, 
+  //   DrivetrainConstants.kRightPositiveMovesForward
+  // );
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator, DifferentialDriveKinematics kinematics, AHRS gyro, TalonFX rightMotor, TalonFX leftMotor) { 
@@ -108,6 +109,7 @@ public class DriveSubsystem extends SubsystemBase {
   
     // Setting up Config
     TalonFXConfiguration optionalRightMotorConfig = new TalonFXConfiguration();
+    //check
     optionalRightMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     optionalRightMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -155,6 +157,15 @@ public class DriveSubsystem extends SubsystemBase {
     //m_leftSpeed = Math.pow(m_leftSpeed, 3);
     //m_rightSpeed = Math.pow(m_rightSpeed, 3);
 
+    SmartDashboard.putNumber("Left Set", m_leftSpeed);
+    SmartDashboard.putNumber("Right Set", m_rightSpeed);
+
+    double leftMPS = getMotorSpeedMPS(true);
+    double rightMPS = getMotorSpeedMPS(false);
+    
+    SmartDashboard.putNumber("Left MPS", leftMPS);
+    SmartDashboard.putNumber("Right MPS", rightMPS);
+
     m_Drivetrain.arcadeDrive(m_leftSpeed, m_rightSpeed, true);
   }
 
@@ -182,13 +193,29 @@ public class DriveSubsystem extends SubsystemBase {
     m_poseEstimator.resetPose(Pose2d.kZero);
   }
 
+  public double getMotorSpeedMPS(boolean bLeft) 
+  {
+    double MPS;
+    if (bLeft)
+    {
+      MPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+    }
+    else 
+    {
+      MPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+    }
+    return MPS;
+  }
+
+
   // Returns a robot relative ChassisSpeeds object based on the avrg linear velocity
   // in meters per second and avrg anglear velocity in readians per second
   // Currently we are asuming that their is no scale for the motors, we cannot find anywhere to set the scale.
-  public ChassisSpeeds getRobotRelativeSpeeds(){
+  public ChassisSpeeds getRobotRelativeSpeeds()
+  {
     // Linear Velocity in meters per second
-    double leftMPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
-    double rightMPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+    double leftMPS = getMotorSpeedMPS(true);
+    double rightMPS = getMotorSpeedMPS(false);
 
     // Make wheelSpeeds object from MPS & converts it to chasis speeds
     DifferentialDriveWheelSpeeds wheelSpeeds = new DifferentialDriveWheelSpeeds(leftMPS, rightMPS);
