@@ -2,6 +2,8 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+// https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/VelocityClosedLoop/src/main/java/frc/robot/Robot.java
+// This is a link to do speed control on the kraken motors. We need something like this.
 package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -23,7 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.commands.ArcadeDriveCommand;
+import frc.robot.commands.DifferentialDriveCommand;
 //import frc.robot.utils.PIDControl;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -145,20 +147,18 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void initDefaultCommand(CommandXboxController Controller)
   {
-    setDefaultCommand(new ArcadeDriveCommand(this, Controller));
+    setDefaultCommand(new DifferentialDriveCommand(this, Controller));
   }
 
-  public void setArcadeSpeeds(double joystickInput, double rotationInput)
+  public void setDifferentialSpeeds(double leftSpeedMPS, double rightSpeedMPS)
   {
-    m_leftSpeed = (joystickInput / DrivetrainConstants.kSpeedDivider);
-    m_rightSpeed = (rotationInput / DrivetrainConstants.kTurnDivider);
-
     // NOTE: We are making our own custom input modifications
     //m_leftSpeed = Math.pow(m_leftSpeed, 3);
     //m_rightSpeed = Math.pow(m_rightSpeed, 3);
+    // NOTE: Notes can be useful for conveying information
 
-    SmartDashboard.putNumber("Left Set", m_leftSpeed);
-    SmartDashboard.putNumber("Right Set", m_rightSpeed);
+    SmartDashboard.putNumber("Left Set", leftSpeedMPS);
+    SmartDashboard.putNumber("Right Set", rightSpeedMPS);
 
     double leftMPS = getMotorSpeedMPS(true);
     double rightMPS = getMotorSpeedMPS(false);
@@ -166,7 +166,7 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Left MPS", leftMPS);
     SmartDashboard.putNumber("Right MPS", rightMPS);
 
-    m_Drivetrain.arcadeDrive(m_leftSpeed, m_rightSpeed, true);
+    // TODO: set motor voltage based on CTRE example
   }
 
   public double getSpeed(boolean bLeft)
