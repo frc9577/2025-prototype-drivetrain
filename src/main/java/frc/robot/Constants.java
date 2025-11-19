@@ -21,18 +21,18 @@ public final class Constants {
   public static class AutoConstants {
     // Module Config Stuff
     // TODO: Run SYS ID and fill in!
-    public static final double kWheelRadiusMeters = 0.0;
-    public static final double kMaxDriveVelocityMPS = 0.0;
-    public static final double kWheelCOF = 0.0;
+    public static final double kWheelRadiusMeters = 0.0508;
+    public static final double kMaxDriveVelocityMPS = 40.0; // This is what SysID is saying i dont think its going 90 mph
+    public static final double kWheelCOF = 1.0;
     public static final int kNumMotors = 4;
-    public static final double kDriveCurrentLimit = 0.0;
+    public static final double kDriveCurrentLimit = 60.0;
 
     public static final DCMotor kDriveMotor = DCMotor.getKrakenX60(kNumMotors);
     public static final ModuleConfig kMoudleConfig = new ModuleConfig(kWheelRadiusMeters, kMaxDriveVelocityMPS, kWheelCOF, kDriveMotor, kDriveCurrentLimit, kNumMotors);
 
     // Robot Config Stuff
     // TODO: Run SYS ID and fill in!
-    public static final double kMassKG = 0.0;
+    public static final double kMassKG = 15.0;
     public static final double kMOI = 0.0; // Moment of Intertia
     public static final double kTrackWithMeters = 0.0;
 
@@ -54,11 +54,12 @@ public final class Constants {
     public static final double kSpeedDivider = 2.5;
 
     // Auto PID stuff
-    public static final double kV = 0; // Add x V output to overcome static friction
-    public static final double kS = 0; // A velocity target of 1 rps results in xV output
-    public static final double kP = 0.3; // An error of 1 rotation results in x V output
+    public static final double kV = 0.1196; // Add x V output to overcome static friction
+    public static final double kS = 0.15308; // A velocity target of 1 rps results in xV output
+    public static final double kP = 0.12032; // An error of 1 rotation results in x V output
     public static final double kI = 0.0;
-    public static final double kD = 0.1; // A velocity of 1 rps results in x V output
+    public static final double kD = 0; // A velocity of 1 rps results in x V output
+    public static final double kA = 0.00728; // Voltage needed to induce a given accel. in the motor shaft.
     public static final double PeakVoltage = 10.0;
 
     public static final int maxVelocity = 30; // rps/s
