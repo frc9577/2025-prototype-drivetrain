@@ -27,12 +27,12 @@ public final class Constants {
     public static final double kTurnDivider = 2;
     public static final double kSpeedDivider = 2.5;
 
-    // Auto PID stuff
-    public static final double kV = 0; // Add x V output to overcome static friction
-    public static final double kS = 0; // A velocity target of 1 rps results in xV output
-    public static final double kP = 0.3; // An error of 1 rotation results in x V output
+    // These numbers came from sys id program
+    public static final double kV = 1.8747; // Add x V output to overcome static friction
+    public static final double kS = 0.15316; // A velocity target of 1 rps results in xV output
+    public static final double kP = 2.7562; // An error of 1 rotation results in x V output
     public static final double kI = 0.0;
-    public static final double kD = 0.1; // A velocity of 1 rps results in x V output
+    public static final double kD = 0.0; // A velocity of 1 rps results in x V output
     public static final double PeakVoltage = 10.0;
 
     public static final int maxVelocity = 30; // rps/s
