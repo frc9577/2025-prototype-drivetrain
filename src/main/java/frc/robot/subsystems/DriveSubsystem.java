@@ -2,6 +2,8 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+// https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/VelocityClosedLoop/src/main/java/frc/robot/Robot.java
+// This is a link to do speed control on the kraken motors. We need something like this.
 package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -22,11 +24,13 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.commands.ArcadeDriveCommand;
+import frc.robot.commands.DifferentialDriveCommand;
+//import frc.robot.utils.PIDControl;
 
 public class DriveSubsystem extends SubsystemBase {
   private TalonFX m_rightMotor;
@@ -44,6 +48,16 @@ public class DriveSubsystem extends SubsystemBase {
   private final DifferentialDrivePoseEstimator m_poseEstimator;
   private final AHRS m_gyro;
 
+  // PIDControl m_leftPidControl = new PIDControl(
+  //   m_leftMotor, 
+  //   DrivetrainConstants.kLeftPositiveMovesForward
+  // );
+
+  // PIDControl m_rightPidControl = new PIDControl(
+  //   m_rightMotor, 
+  //   DrivetrainConstants.kRightPositiveMovesForward
+  // );
+
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem(DifferentialDrivePoseEstimator poseEstimator, DifferentialDriveKinematics kinematics, AHRS gyro, TalonFX rightMotor, TalonFX leftMotor) { 
     m_poseEstimator = poseEstimator;
@@ -54,6 +68,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Right Motor
     TalonFXConfiguration rightMotorConfig = new TalonFXConfiguration();
+    rightMotorConfig.Slot0.kV = DrivetrainConstants.kV;
+    rightMotorConfig.Slot0.kS = DrivetrainConstants.kS;
+    rightMotorConfig.Slot0.kP = DrivetrainConstants.kP;
+    rightMotorConfig.Slot0.kI = DrivetrainConstants.kI; // No output for integrated error
+    rightMotorConfig.Slot0.kD = DrivetrainConstants.kD; // A velocity of 1 rps results in 0.1 V output
     rightMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     rightMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -65,6 +84,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Left Motor
     TalonFXConfiguration leftMotorConfig = new TalonFXConfiguration();
+    leftMotorConfig.Slot0.kV = DrivetrainConstants.kV;
+    leftMotorConfig.Slot0.kS = DrivetrainConstants.kS;
+    leftMotorConfig.Slot0.kP = DrivetrainConstants.kP;
+    leftMotorConfig.Slot0.kI = DrivetrainConstants.kI; // No output for integrated error
+    leftMotorConfig.Slot0.kD = DrivetrainConstants.kD; // A velocity of 1 rps results in 0.1 V output
     leftMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     leftMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
@@ -103,6 +127,10 @@ public class DriveSubsystem extends SubsystemBase {
       }, 
       this
     );
+    SendableRegistry.setName(m_Drivetrain, "DriveSubsystem", "Drivetrain");
+    
+    // Gyro setup
+    m_gyro.zeroYaw();
   }
 
   public void setFollowers(TalonFX optionalRight, TalonFX optionalLeft) {
@@ -110,6 +138,7 @@ public class DriveSubsystem extends SubsystemBase {
   
     // Setting up Config
     TalonFXConfiguration optionalRightMotorConfig = new TalonFXConfiguration();
+    //check
     optionalRightMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     optionalRightMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -145,19 +174,26 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void initDefaultCommand(CommandXboxController Controller)
   {
-    setDefaultCommand(new ArcadeDriveCommand(this, Controller));
+    setDefaultCommand(new DifferentialDriveCommand(this, Controller));
   }
 
-  public void setArcadeSpeeds(double joystickInput, double rotationInput)
+  public void setDifferentialSpeeds(double leftSpeedMPS, double rightSpeedMPS)
   {
-    m_leftSpeed = (joystickInput / DrivetrainConstants.kSpeedDivider);
-    m_rightSpeed = (rotationInput / DrivetrainConstants.kTurnDivider);
-
     // NOTE: We are making our own custom input modifications
     //m_leftSpeed = Math.pow(m_leftSpeed, 3);
     //m_rightSpeed = Math.pow(m_rightSpeed, 3);
+    // NOTE: Notes can be useful for conveying information
 
-    m_Drivetrain.arcadeDrive(m_leftSpeed, m_rightSpeed, true);
+    SmartDashboard.putNumber("Left Set", leftSpeedMPS);
+    SmartDashboard.putNumber("Right Set", rightSpeedMPS);
+
+    double leftMPS = getMotorSpeedMPS(true);
+    double rightMPS = getMotorSpeedMPS(false);
+    
+    SmartDashboard.putNumber("Left MPS", leftMPS);
+    SmartDashboard.putNumber("Right MPS", rightMPS);
+
+    // TODO: set motor voltage based on CTRE example
   }
 
   public double getSpeed(boolean bLeft)
@@ -184,13 +220,29 @@ public class DriveSubsystem extends SubsystemBase {
     m_poseEstimator.resetPose(newPose);
   }
 
+  public double getMotorSpeedMPS(boolean bLeft) 
+  {
+    double MPS;
+    if (bLeft)
+    {
+      MPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+    }
+    else 
+    {
+      MPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+    }
+    return MPS;
+  }
+
+
   // Returns a robot relative ChassisSpeeds object based on the avrg linear velocity
   // in meters per second and avrg anglear velocity in readians per second
   // Currently we are asuming that their is no scale for the motors, we cannot find anywhere to set the scale.
-  public ChassisSpeeds getRobotRelativeSpeeds(){
+  public ChassisSpeeds getRobotRelativeSpeeds()
+  {
     // Linear Velocity in meters per second
-    double leftMPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
-    double rightMPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+    double leftMPS = getMotorSpeedMPS(true);
+    double rightMPS = getMotorSpeedMPS(false);
 
     // Make wheelSpeeds object from MPS & converts it to chasis speeds
     DifferentialDriveWheelSpeeds wheelSpeeds = new DifferentialDriveWheelSpeeds(leftMPS, rightMPS);
@@ -206,7 +258,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // This method will be called once per scheduler run 
 
     m_poseEstimator.update(
         m_gyro.getRotation2d(), 

@@ -64,6 +64,9 @@ public final class Constants {
     public static final int maxVelocity = 30; // rps/s
     public static final int maxAcceleration = 50; // rps
 
+    // Constants used by differential drive command.
+    public static final double maxVelocityMPS = 1.0; 
+
     // For Auto Potentially
     public static boolean kLeftPositiveMovesForward = true;
     public static boolean kRightPositiveMovesForward = true;
