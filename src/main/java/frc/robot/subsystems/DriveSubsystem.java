@@ -102,8 +102,8 @@ public class DriveSubsystem extends SubsystemBase {
     m_Drivetrain = new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
     SendableRegistry.setName(m_Drivetrain, "DriveSubsystem", "Drivetrain");
     
-      // Gyro setup
-      m_gyro.zeroYaw();
+    // Gyro setup
+    m_gyro.zeroYaw();
   }
 
   public void setFollowers(TalonFX optionalRight, TalonFX optionalLeft) {
