@@ -20,7 +20,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 public final class Constants {
   public static class AutoConstants {
     // Module Config Stuff
-    // TODO: Run SYS ID and fill in!
     public static final double kWheelRadiusMeters = 0.0508;
     public static final double kMaxDriveVelocityMPS = 40.0; // This is what SysID is saying i dont think its going 90 mph
     public static final double kWheelCOF = 1.0;
@@ -33,10 +32,9 @@ public final class Constants {
     // Robot Config Stuff
     // TODO: Run SYS ID and fill in!
     public static final double kMassKG = 15.0;
-    public static final double kMOI = 0.0; // Moment of Intertia
-    public static final double kTrackWithMeters = 0.0;
+    public static final double kMOI = kMassKG * (DrivetrainConstants.trackWidthMeters/2) * (DrivetrainConstants.kA_angular / DrivetrainConstants.kA_linear); // Moment of Intertia
 
-    public static final RobotConfig kRobotConfig = new RobotConfig(kMassKG, kMOI, kMoudleConfig, kTrackWithMeters);
+    public static final RobotConfig kRobotConfig = new RobotConfig(kMassKG, kMOI, kMoudleConfig, DrivetrainConstants.trackWidthMeters);
   }
 
   public static class OperatorConstants {
@@ -59,6 +57,8 @@ public final class Constants {
     public static final double kP = 2.7562; // An error of 1 rotation results in x V output
     public static final double kI = 0.0;
     public static final double kD = 0.0; // A velocity of 1 rps results in x V output
+    public static final double kA_linear = 0.1141; // Voltage needed to induce a given accel. in the motor shaft
+    public static final double kA_angular = 0.0; // TODO: We need to measure this!
     public static final double PeakVoltage = 10.0;
 
     public static final int maxVelocity = 30; // rps/s
@@ -77,6 +77,6 @@ public final class Constants {
     public static final int kTicksPerUpdate = 5;
 
     // The track width in meters.
-    public static final double trackWidthMeters = 1; // TODO: Set Value!
+    public static final double trackWidthMeters = 29.0 * 0.0254; // TODO: Set Value!
   }
 }
