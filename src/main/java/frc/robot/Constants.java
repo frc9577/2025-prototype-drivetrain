@@ -80,6 +80,6 @@ public final class Constants {
     public static final int kTicksPerUpdate = 5;
 
     // The track width in meters.
-    public static final double trackWidthMeters = 29.0 * 0.0254; // TODO: Set Value!
+    public static final double trackWidthMeters = 29.0 * 0.0254;
   }
 }
