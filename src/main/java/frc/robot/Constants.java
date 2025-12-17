@@ -20,14 +20,20 @@ import edu.wpi.first.math.system.plant.DCMotor;
 public final class Constants {
   public static class AutoConstants {
     // Module Config Stuff
-    public static final double kWheelRadiusMeters = 0.0508;
     public static final double kMaxDriveVelocityMPS = 40.0; // This is what SysID is saying i dont think its going 90 mph
     public static final double kWheelCOF = 1.0;
     public static final int kNumMotors = 4;
-    public static final double kDriveCurrentLimit = 60.0;
+    public static final double kDriveCurrentLimit = 10.0;
 
     public static final DCMotor kDriveMotor = DCMotor.getKrakenX60(kNumMotors);
-    public static final ModuleConfig kMoudleConfig = new ModuleConfig(kWheelRadiusMeters, kMaxDriveVelocityMPS, kWheelCOF, kDriveMotor, kDriveCurrentLimit, kNumMotors);
+    public static final ModuleConfig kMoudleConfig = new ModuleConfig(
+      DrivetrainConstants.kWheelRadiusMeters, 
+      kMaxDriveVelocityMPS, 
+      kWheelCOF, 
+      kDriveMotor, 
+      kDriveCurrentLimit, 
+      kNumMotors
+    );
 
     // Robot Config Stuff
     // TODO: Run SYS ID and fill in!
@@ -58,7 +64,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.0; // A velocity of 1 rps results in x V output
     public static final double kA_linear = 0.1141; // Voltage needed to induce a given accel. in the motor shaft
-    public static final double kA_angular = 0.0; // TODO: We need to measure this!
+    public static final double kA_angular = 0.1141; // TODO: We need to measure this!
     public static final double PeakVoltage = 10.0;
 
     public static final int maxVelocity = 30; // rps/s
