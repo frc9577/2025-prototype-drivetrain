@@ -45,15 +45,15 @@ public final class Constants {
     public static boolean kLeftPositiveMovesForward = true;
     public static boolean kRightPositiveMovesForward = true;
 
-    // The distance travelled for a single rotation of the Kraken output shaft.
-    public static final double kDrivetrainGearRatio = (8.46/0.478536);
+    // Physical measurements related to the drivetrain.
+    public static final double kDrivetrainGearRatio = 0.2;
     public static final double kWheelRadiusMeters = (4.0 / 2.0) * 0.0254; // Four Inch Wheels
-    public static final double kWheelCircumfrance = 2 * Math.PI * DrivetrainConstants.kWheelRadiusMeters;
+    public static final double kWheelCircumference = 2 * Math.PI * DrivetrainConstants.kWheelRadiusMeters;
 
     // SmartDashboard update frequency for drive subsystem state in 20ms counts.
     public static final int kTicksPerUpdate = 5;
 
     // The track width in meters.
-    public static final double trackWidthMeters = 1; // TODO: Set Value!
+    public static final double trackWidthMeters = 29.0 * 0.0254; 
   }
 }
