@@ -1,42 +1,48 @@
-# robot-base
-FRC 9577's Template Repository for Robot Code
+# 2025-prototype-drivetrain
+FRC 9577's code repository for their fall 2025 custom drivetrain project.
 
-# How to use this template
-This repositry is a github template repository. It represents the baseline code that FRC 9577 uses for our robots, including dependencies we use in our designs. To use our code, create a repository using this one as a template.
+## Repository Organization
+This repository is organized to have 2 "primary" branches, these are non-temporary branches which are the basis of all other branches. 
 
-## Repository Approach
-The approach here is to minimize setup time for a developer. By leveraging the WPILib distributed docker container and through effective use of docker we limit the prerequisite install to just a few items. This approach is for development only and does not replace the driver station. We support both linux and Windows for development. (Currently )
+They are the following:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;**main** - Code that is known to work via testing, does NOT have any features that are still in development or half done.
+<br>&nbsp;&nbsp;&nbsp;&nbsp;**development** - Code that is not stable enough for main, either it has features that are not completed or is not tested.
 
-## Installing Prerequsiites
-This repository does not contain any tools. You need to install four tools to support your build: git, VSCode, make, and docker.
+There are also "feature" branches, these branches are temporary for the development of specific features. The feature is listed in the name of the branch, this allows for parallel development of different features that may require the same files. Once a feature is finished and is tested it can be PRed into the development branch and then deleted.
 
-### Installing on Linux
-To install on linux, use your package manager to pick up git, make, and docker. Testing was done on git 2.43, make 4.3, and docker 27.3.1.
+Main can only be PRed into and cannot have any direct commits, development is usually the branch that is PRed into main. All feature branches are PRed into development after the feature is completed for final testing and integration. 
 
-Both make and git come directly from the package manager (e.g. for ubuntu `apt install make git`).
+The primary branches can be merged into the feature branches at any time to update config and readme files, to keep them the same across all branches (when it makes sense). When changing constants, please make those changes on development then cherry-pick or merge development into your branch to make sure there are no duplicated values.
 
-VS Code is installation instructions are here: https://code.visualstudio.com/docs/setup/linux
+## Overall Goals & Definitions
+The goal of the project is to create a stable drivetrain that can drive smoothly with short cycle times.
+We will NOT have a configurable chassis.
 
-Docker installation instructions are here: https://docs.docker.com/engine/install/ubuntu/
+### Competitive Cycle Times
+  - "Cycle Time" is defined as "The time from the start of game piece control to scoring that game piece"
+  - Using "Competive" because the time changes depending on what game is being played.
 
-### Installing on Windows
-Herein, we provide references to each of the windows installers:https://gnuwin32.sourceforge.net/packages/make.htmz
-* git: https://git-scm.com/downloads/win
-* make: https://gnuwin32.sourceforge.net/packages/make.htm
-* docker: https://docs.docker.com/desktop/install/windows-install/
-* VSCode: https://code.visualstudio.com/docs/setup/windows
+### Stability
+- The ability to go fast without tipping & wobbling
+- Little to no bounciness
+- Control stability
 
-This is more manual than a linux install, but it's just 4 tools.
+### Smooth Driving
+- Don't stop to turn
+- Follow a smooth path
 
-When installing git, choose the option to install bash. Always use bash as your windows terminal when using this repo, as we only test on bash.
+## Requirements
+The requirements set out for the robot.
 
-### Windows "funnies"
-- Need to install make for everyone and add the make path manually to system paths.
-- Need to build via external git bash terminal started as administrator.
-
-# Updating this template
-When a new version of tools or libraries becomes available, use the WPILIB VSCode plugin to update the files in the project. Then, open a pull request against main to merge your change in.
-
-Sometimes there are updates not serviced by the WPILib plugin. In these cases, make the changes using editors and push the results to github.
-
-This repository can also be forked.
+- The robot shall comply with the 2025 FRC rules,
+- Shall have 6 wheels,
+- Shall use wheels 4 inches in diameter,
+- Shall have center wheels powered by gearboxes,
+- Shall have outer wheels powered by timing belts connected to center wheels,
+- Shall have a maximum speed of 18 ft/s,
+- Shall stay in an upright orientation,
+- Shall have a low center of gravity,
+- Shall have a center of gravity close to the center of the vertical projection of the robot,
+- **Shall use acceleration profiles**,
+- Shall have an IMU,
+- Shall be constructed from 2”x1” ⅛” wall aluminum tubing,
