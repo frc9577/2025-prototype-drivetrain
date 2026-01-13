@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -38,6 +39,10 @@ public class DriveSubsystem extends SubsystemBase {
 
   private TalonFX m_leftMotor;
   private TalonFX m_optionalLeftMotor; 
+
+  /* Start at velocity 0, use slot 0 */
+  private final VelocityVoltage m_leftVelocityVoltage = new VelocityVoltage(0).withSlot(0);
+  private final VelocityVoltage m_rightVelocityVoltage = new VelocityVoltage(0).withSlot(0);
 
   private DifferentialDrive m_Drivetrain;
 
@@ -193,7 +198,14 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Left MPS", leftMPS);
     SmartDashboard.putNumber("Right MPS", rightMPS);
 
-    // TODO: set motor voltage based on CTRE example
+    // set motor voltage based on CTRE example
+
+    double desiredLeftRotationsPerSecond =(leftMPS/Constants.DrivetrainConstants.kWheelCircumference)/Constants.DrivetrainConstants.kDrivetrainGearRatio;
+    double desiredRightRotationsPerSecond =(rightMPS/Constants.DrivetrainConstants.kWheelCircumference)/Constants.DrivetrainConstants.kDrivetrainGearRatio;
+
+    m_leftMotor.setControl(m_leftVelocityVoltage.withVelocity(desiredLeftRotationsPerSecond));
+    m_rightMotor.setControl(m_rightVelocityVoltage.withVelocity(desiredRightRotationsPerSecond));
+
   }
 
   public double getSpeed(boolean bLeft)
@@ -225,11 +237,11 @@ public class DriveSubsystem extends SubsystemBase {
     double MPS;
     if (bLeft)
     {
-      MPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+      MPS = m_leftMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumference;
     }
     else 
     {
-      MPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumfrance;
+      MPS = m_rightMotor.getVelocity().getValueAsDouble() * DrivetrainConstants.kDrivetrainGearRatio * DrivetrainConstants.kWheelCircumference;
     }
     return MPS;
   }
